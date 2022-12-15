@@ -6,7 +6,7 @@ export const errorHandler = (
   req:Request,
   res:Response,
   next:NextFunction) => {
-
+    console.log("Tye of", typeof error);
     if(error instanceof CustomError){
       return res.status(error.statusCode).send({errors: error.serializeErrors()});
     }
