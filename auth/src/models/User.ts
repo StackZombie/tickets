@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import {Password} from '../Services/password';
 
 // An interface that describes the properties 
@@ -21,8 +21,6 @@ interface UserDoc extends mongoose.Document{
 }
 
 
-
-
 const userSchema = new mongoose.Schema({
   email:{
     type: String,
@@ -30,13 +28,15 @@ const userSchema = new mongoose.Schema({
   },
   password:{
     type: String,
-    required: true,
-  }
+    required: true
+  },
+
 });
 
 userSchema.statics.build = (attr: UserAttrs) =>{
   return new User(attr);
 }
+
 
 userSchema.pre('save',async function(done){
   if(this.isModified('password')){

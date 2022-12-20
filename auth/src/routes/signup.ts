@@ -1,41 +1,45 @@
-import express, {Request,Response} from 'express';
-import { body, validationResult } from 'express-validator';
-
-import { RequestValidationError } from '../Errors/request-validation-error';
+import express, { Request, Response } from 'express';
+import { body } from 'express-validator';
+import { validateRequest } from '../middleware/validation-handler';
 import { BadRequestError } from '../Errors/bad-request-error';
 
 import { User } from '../models/User';
-import { CustomError } from '../Errors/custom-error';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-router.post("/api/users/signup",[
-  body('email')
-    .isEmail()
-    .withMessage('Email must be valid'),
-  body('password')
-    .trim()
-    .isLength({min:4, max:20})
-    .withMessage("Password must be between 4 and 20 characters")
-],
-async (req:Request,res:Response)=>{
+router.post(
+  '/api/users/signup',
+  [
+    body('email').isEmail().withMessage('Email must be valid'),
+    body('password')
+      .trim()
+      .isLength({ min: 4, max: 20 })
+      .withMessage('Password must be between 4 and 20 characters'),
+  ],
+  validateRequest,
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log('User Already Exists');
+      throw new BadRequestError('Email is already in use');
+    } else {
+      const user = User.build({ email, password });
+      await user.save();
+      // Generate jwt token
+      const userJwt = jwt.sign(
+        { email: user.email, id: user.id },
+        process.env.JWT_KEY!
+      );
 
-  const errors = validationResult(req);
-  if(!errors.isEmpty()){
-    throw new RequestValidationError(errors.array());
+      // store it on session
+      req.session = {
+        jwt: userJwt,
+      };
+      return res.status(201).send(user);
+    }
   }
-  const {email,password} = req.body;
-  const existingUser = await User.findOne({email});
-  if(existingUser){
-    console.log("User Already Exists");
-    throw new BadRequestError("Email is already in use");
-    
-  }else{
-    const user =User.build({email,password});
-    await user.save();
-    return res.status(201).send(user);
+);
 
-  }
-})
-
-export {router as signupRouter};
+export { router as signupRouter };
