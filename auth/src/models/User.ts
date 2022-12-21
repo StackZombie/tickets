@@ -1,53 +1,59 @@
-import mongoose from "mongoose";
-import {Password} from '../Services/password';
+import mongoose from 'mongoose';
+import { transform } from 'typescript';
+import { Password } from '../Services/password';
 
-// An interface that describes the properties 
+// An interface that describes the properties
 // that are required to create new user
 
-interface UserAttrs{
-  email:string;
-  password:string;
+interface UserAttrs {
+  email: string;
+  password: string;
 }
 
-interface UserModel extends mongoose.Model<UserDoc>{
-  build(attr: UserAttrs):UserDoc;
+interface UserModel extends mongoose.Model<UserDoc> {
+  build(attr: UserAttrs): UserDoc;
 }
 
 // An interface that describes the properties that the UserDoc may holds
 
-interface UserDoc extends mongoose.Document{
-  email:string;
-  password:string;
+interface UserDoc extends mongoose.Document {
+  email: string;
+  password: string;
 }
 
-
 const userSchema = new mongoose.Schema({
-  email:{
+  email: {
     type: String,
     required: true,
   },
-  password:{
+  password: {
     type: String,
-    required: true
+    required: true,
   },
-
 });
 
-userSchema.statics.build = (attr: UserAttrs) =>{
+userSchema.statics.build = (attr: UserAttrs) => {
   return new User(attr);
-}
+};
 
-
-userSchema.pre('save',async function(done){
-  if(this.isModified('password')){
-    const  hashedPassword =await Password.toHash(this.password);
-    this.set('password',hashedPassword);
+userSchema.pre('save', async function (done) {
+  if (this.isModified('password')) {
+    const hashedPassword = await Password.toHash(this.password);
+    this.set('password', hashedPassword);
   }
   done();
 });
 
-const User = mongoose.model<UserDoc, UserModel>('User',userSchema);
+userSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.password;
+    delete ret.__v;
+    return ret;
+  },
+});
 
+const User = mongoose.model<UserDoc, UserModel>('User', userSchema);
 
-
-export {User};
+export { User };

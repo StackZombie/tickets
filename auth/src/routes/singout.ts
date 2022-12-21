@@ -3,6 +3,7 @@ const router = express.Router();
 
 router.get('/api/users/signout', (req: Request, res: Response) => {
   req.session = null;
+  console.log('RUNS');
   res.send({});
 });
 
