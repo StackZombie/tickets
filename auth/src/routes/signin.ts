@@ -1,8 +1,7 @@
 import express, { Response, Request } from 'express';
 import { body } from 'express-validator';
-import { validateRequest } from '../middleware/validation-handler';
+import { validateRequest, BadRequestError } from '@oristic/common';
 import { User } from '../models/User';
-import { BadRequestError } from '../Errors/bad-request-error';
 import { Password } from '../Services/password';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
