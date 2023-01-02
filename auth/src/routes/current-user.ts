@@ -1,12 +1,10 @@
 import express, { Response, Request } from 'express';
 const router = express.Router();
-import { currentUser } from '../middleware/current-user';
-import { requireAuth } from '../middleware/require-auth';
+import { currentUser } from '@oristic/common';
 
 router.get(
   '/api/users/currentUser',
   currentUser,
-  requireAuth,
   (req: Request, res: Response) => {
     res.send({ currentUser: req.currentUser || null });
   }

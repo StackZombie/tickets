@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { validateRequest } from '../middleware/validation-handler';
-import { BadRequestError } from '../Errors/bad-request-error';
+import { validateRequest, BadRequestError } from '@oristic/common';
 
 import { User } from '../models/User';
 import jwt from 'jsonwebtoken';
